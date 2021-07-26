@@ -4,7 +4,7 @@
 # Descrição: Makefile.
 
 disparador:
-	g++ -Wall disparador.c -o disparador
+	gcc -Wall disparador.c tarefas.c -o disparador
 
 clean:
 	rm disparador
