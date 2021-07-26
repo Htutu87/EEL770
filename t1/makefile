@@ -3,8 +3,10 @@
 # Autor: Artur Amaral | DRE: 119057968
 # Descrição: Makefile.
 
-disparador:
-	gcc -Wall disparador.c tarefas.c -o disparador
+all: 
+	gcc -Wall disparador.c -o disparador
+	gcc -Wall filho01.c -o filhoUm
+	gcc -Wall filho02.c -o filhoDois
 
 clean:
-	rm disparador
+	rm disparador filhoUm filhoDois
