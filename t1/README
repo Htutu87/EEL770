@@ -1,0 +1,57 @@
+
+EEL770 - Sistemas Operacionais
+UFRJ | 2021.1 | Prof.: Rodrigo Couto
+Autor: Artur Amaral | DRE: 119057968
+Descrição: Arquivo Read me.
+
+--------------------------------
+* Descrição e uso do programa
+--------------------------------
+
+O código fonte disparador.c implementa um programa que espera sinais vindos do
+sistema operacional. O programa responde a três sinais diferentes: SIGUSR1, SIGUSR2
+e SIGTERM.
+
+Ao detectar um SIGUSR1, ele executa a 'tarefa um', que consiste em sortear um 
+número de 1 a 100, realizada por um processo filho do programa executado inicialmente.
+
+Ao detectar um SIGUSR2, ele executa a 'tarefa dois', que consiste em avaliar o
+número sorteado anteriormente executar o comando ping, cujos argumentos dependem
+da paridade daquele número. Caso a 'tarefa um' não tenha sido chamada, por padrão
+a 'tarefa dois' não executa nenhum comando.
+
+Ao receber um SIGTERM, a execução do programa é encerrada.
+
+Para sinalizar ao disparador, usa-se os seguintes comandos em outro shell:
+
+kill -SIGUSR1 [pid] 
+kill -SIGUSR2 [pid] 
+kill -SIGTERM [pid] 
+
+    onde o [pid] do disparador é informado ao usuário durante a execução do mesmo.
+
+--------------------------------
+* Compilação
+--------------------------------
+
+No diretório do arquivo há um makefile para a compilação do programa (comando:
+'make disparador') e remoção dos arquivos executáveis (comando: 'make clean').
+
+--------------------------------
+* Sobre as regras de cópia do trabalho
+--------------------------------
+
+Fazendo o trabalho, me utilizei de diversas referências achadas na internet, por
+vezes copiando uma ou outra linha de código. Quando possível, referenciei de onde
+me inspirei em determinada parte do código, geralmente em blocos mais 'extensos'.
+Contudo, é muito difícil referenciar 100% do que utilizei, até porque há muita mistura
+entre os códigos de que me baseei. Porém, afirmo que fui completamente honesto 
+academicamente na realização do trabalho.
+
+--------------------------------
+* Sistema utilizado
+--------------------------------
+
+Distribuição/versão: ManjaroLinux 21.1.0
+Kernel: 5.10.49-1-MANJARO
+
