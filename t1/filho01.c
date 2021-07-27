@@ -23,10 +23,17 @@ int main(){
 
     int numeroSorteado = rand() % (MAX_RAND - MIN_RAND + 1) + MIN_RAND;
 
+ //   int a = descritoresPipe[0];
+
+
     printf("------------------------------------\n");
     printf("\n Executando tarefa 01 (pid: %u).\n", getpid());
     printf("\n\tNumero aleatorio sorteado: %i.\n", numeroSorteado);
     printf("\n------------------------------------\n");
+
+    while (1){
+        sleep(1);
+    }
 
     return OK;
 }

@@ -5,8 +5,9 @@
 
 all: 
 	gcc -Wall disparador.c -o disparador
-	gcc -Wall filho01.c -o filhoUm
-	gcc -Wall filho02.c -o filhoDois
+#	gcc -Wall filho01.c -o filhoUm
+#	gcc -Wall filho02.c -o filhoDois
 
 clean:
-	rm disparador filhoUm filhoDois
+	rm disparador 
+# filhoUm filhoDois
