@@ -6,7 +6,7 @@
 # como exemplo no roteiro do trabalho.
 
 CC = gcc
-CFLAGS = -Wall -std=c11
+CFLAGS = -Wall -std=c11 -pthread
 TARGET = babuinos
 
 all: $(TARGET)

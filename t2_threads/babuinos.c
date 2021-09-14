@@ -28,12 +28,12 @@ typedef struct
 
 void printaCorda(corda_t *corda)
 {
-   printf("numBabuinosNorte: %u\n", corda->numBabuinosNorte); 
-   printf("numBanuinosSul: %u\n", corda->numBabuinosSul); 
-   printf("numBabuinosAtravessando: %u\n", corda->numBabuinosAtravessando); 
-   printf("direcaoAtual: "); 
+   printf("-> numBabuinosNorte: %u\n", corda->numBabuinosNorte); 
+   printf("-> numBanuinosSul: %u\n", corda->numBabuinosSul); 
+   printf("-> numBabuinosAtravessando: %u\n", corda->numBabuinosAtravessando); 
+   printf("-> direcaoAtual: "); 
    corda->direcaoAtual ? printf("SUL->NORTE\n") : printf("NORTE->SUL\n") ; 
-   printf("livre: ");
+   printf("-> livre: ");
    corda->livre ? printf("Sim\n") : printf("Nao\n"); 
 }
 
@@ -57,9 +57,10 @@ void delay_seconds(double segundos)
 // Cada função de travessia representa uma thread, que deve ser executada
 // ininterruptamente até seu fim, para o funcionamento correto do programa.
 
-void travessiaNorteSul(corda_t *corda)
+void *travessiaNorteSul(void *arg)
 {
-
+ 
+    corda_t *corda = (corda_t *) arg; 
     /* Babuino verifica se existem condições para ele atravessar.
      *
      * Se a direcao atual for sul-norte significa que o último babuino
@@ -71,7 +72,7 @@ void travessiaNorteSul(corda_t *corda)
     if (corda->numBabuinosNorte == 0)
     {
         printf("Nao ha babuinos para atravessar.\n");
-        return;
+        return NULL;
     }
 
     unsigned int babuinoId = 0 + rand() % (( 100 + 1 ) - 0);
@@ -103,14 +104,17 @@ void travessiaNorteSul(corda_t *corda)
     }
     corda->numBabuinosAtravessando--;
     corda->numBabuinosSul++;
+    return NULL;
 }
 
-void travessiaSulNorte(corda_t *corda)
+void *travessiaSulNorte(void *arg)
 {
+    corda_t *corda = (corda_t *) arg; 
+
     if (corda->numBabuinosSul == 0)
     {
         printf("Nao ha babuinos para atravessar.\n");
-        return;
+        return NULL;
     }
  
     unsigned int babuinoId = 0 + rand() % (( 100 + 1 ) - 0);
@@ -142,6 +146,7 @@ void travessiaSulNorte(corda_t *corda)
     }
     corda->numBabuinosAtravessando--;
     corda->numBabuinosNorte++;
+    return NULL;
 }
 
 //--------------------------------------------------------------------------
@@ -149,6 +154,9 @@ void travessiaSulNorte(corda_t *corda)
 
 int main()
 {
+
+    pthread_t ns;
+    pthread_t sn;
 
     const unsigned int capacidade = 5;
 
@@ -161,12 +169,12 @@ int main()
 
     srand(time(NULL));
 
+    pthread_create(&ns, NULL, travessiaNorteSul, &corda);
+    pthread_create(&sn, NULL, travessiaSulNorte, &corda);
+
     printaCorda(&corda);
-    travessiaNorteSul(&corda);
-    travessiaNorteSul(&corda);
-    travessiaSulNorte(&corda);
-    travessiaNorteSul(&corda);
-    travessiaSulNorte(&corda);
+    pthread_join(sn, NULL);
+    pthread_join(ns, NULL);
     printaCorda(&corda);
 
     return 0;
