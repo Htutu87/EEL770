@@ -1,160 +1,112 @@
+/*  Pseudo código
+ *  
+ *  #travessia Norte-Sul
+ *
+ *  -> Babuino checa se há alguem vindo em direcao contraria 
+ *  (checa variável de condição!!! Recurso compartilhado entre as threads).
+ *  -> Se tiver, o babuino coloca a thread pra dormir(dentro do while, ainda
+ *  checando pela variável.)
+ *  -> Se não tiver, ele indica que vai atravessar na direção norte sul e
+ *   atravessa de fato.
+ *   -> Ao chegar do outro lado, ele sinaliza que chegou. 
+ *
+ * */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdbool.h>
-#include <pthread.h>
+// Talvez eu tenha que criar duas filas de espera, uma para o norte, outra para
+// o sul, pois o signal pode acabar acordando um thread do mesmo lado. Talvez não.
 
-#define NORTE_SUL 0
-#define SUL_NORTE 1
-#define NUM_INICIAL_NORTE 20
-#define NUM_INICIAL_SUL 20
+#include "babuinos.h"
 
-//int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
-//                 void *(*start_routine)(void*), void *arg);
-
-//--------------------------------------------------------------------------
-// Estruturas auxiliares
-
-typedef struct
-{
-    unsigned int numBabuinosNorte,
-                numBabuinosSul,
-                numBabuinosAtravessando;
-    const unsigned int *capacidade;
-    bool direcaoAtual, livre;
-} corda_t;
-
-
-void printaCorda(corda_t *corda)
-{
-   printf("-> numBabuinosNorte: %u\n", corda->numBabuinosNorte); 
-   printf("-> numBanuinosSul: %u\n", corda->numBabuinosSul); 
-   printf("-> numBabuinosAtravessando: %u\n", corda->numBabuinosAtravessando); 
-   printf("-> direcaoAtual: "); 
-   corda->direcaoAtual ? printf("SUL->NORTE\n") : printf("NORTE->SUL\n") ; 
-   printf("-> livre: ");
-   corda->livre ? printf("Sim\n") : printf("Nao\n"); 
-}
-
-//--------------------------------------------------------------------------
-// Função auxiliar que fornece temporização para o programa.
-
-void delay_seconds(double segundos)
-{ 
-    clock_t tempo_inicial;
-    double tempo_decorrido = 0;
-
-    tempo_inicial = clock();
-
-    while (tempo_decorrido <= segundos)
-        tempo_decorrido = (double)(clock() - tempo_inicial) / CLOCKS_PER_SEC;
-}
-
-//--------------------------------------------------------------------------
-//
-// Funções de travessia dos babuínos.
-// Cada função de travessia representa uma thread, que deve ser executada
-// ininterruptamente até seu fim, para o funcionamento correto do programa.
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 void *travessiaNorteSul(void *arg)
 {
- 
     corda_t *corda = (corda_t *) arg; 
-    /* Babuino verifica se existem condições para ele atravessar.
-     *
-     * Se a direcao atual for sul-norte significa que o último babuino
-     * a atravessar veio do sul, logo, o estado ficou salvo como sul_norte.
-     * Mas se a corda estiver livre, significa que, mesmo a direcao atual
-     * sendo contrária, o babuino pode atravessar, invertendo a atual direcao
-     * da corda. Caso a direcao atual seja igual ao objetivo deste babuino,
-     * este if é ignorado e o procedimento segue normalmente. */
-    if (corda->numBabuinosNorte == 0)
+    unsigned short babuinoId = 0 + rand() % ( (100 + 1) - 0);
+
+    pthread_mutex_lock(&lock);
+    while(corda->direcaoAtual == SUL_NORTE) 
+        pthread_cond_wait(&cond, &lock);
+    
+    if (corda->numBabuinosAtravessando >= *corda->capacidade)
+        printf("[N%u] Corda lotada.\n", babuinoId);
+    else
     {
-        printf("Nao ha babuinos para atravessar.\n");
-        return NULL;
-    }
-
-    unsigned int babuinoId = 0 + rand() % (( 100 + 1 ) - 0);
-
-    //LOCK
-    if (corda->direcaoAtual == SUL_NORTE)
-        if (corda->livre)
+        corda->numBabuinosAtravessando++;
+         
+        for (int i = 1; i <= 5 ; i++)
         {
-            corda->direcaoAtual = !corda->direcaoAtual;
-            corda->livre = !corda->livre;
-        }
-    //UNLOCK
+            printf("[N%u] Percorreu: %u%%\n", babuinoId, i*20);
+            delay_seconds(1);
+        } 
+        
+        
 
-    // while corda->babuinosAtravessando >= *(corda->capacidade)
-    // ESPERAR CAPACIDADE BAIXAR. Aqui, usar-se-á uma variável de condição.
-
-    /* Travessia do babuino */
-
-    corda->numBabuinosNorte--;
-    corda->numBabuinosAtravessando++;
-
-    for (int i = 1; i <= 5; i++)
-    {
-        printf("Babuino [N%u] atravessou %u%% da corda\n", 
-                babuinoId,
-                i*20);
-        delay_seconds(1);
+        // Quando a travessia é completada, o programa contabiliza que um babuino
+        // saiu do norte e foi pro sul.
+    
         //printaCorda(corda);
+
+        corda->numBabuinosAtravessando--;
+        corda->numBabuinosNorte--; 
+        
+        if (corda->numBabuinosAtravessando == 0)
+        {
+            corda->direcaoAtual = SUL_NORTE;
+            pthread_cond_signal(&cond);
+        }
+
+        pthread_mutex_unlock(&lock);
     }
-    corda->numBabuinosAtravessando--;
-    corda->numBabuinosSul++;
-    return NULL;
+
+    pthread_exit(NULL);
 }
 
 void *travessiaSulNorte(void *arg)
 {
     corda_t *corda = (corda_t *) arg; 
+    unsigned short babuinoId = 0 + rand() % ( (100 + 1) - 0);
 
-    if (corda->numBabuinosSul == 0)
+    pthread_mutex_lock(&lock);
+    while(corda->direcaoAtual == NORTE_SUL) 
+        pthread_cond_wait(&cond, &lock);
+    
+    if (corda->numBabuinosAtravessando >= *corda->capacidade)
     {
-        printf("Nao ha babuinos para atravessar.\n");
-        return NULL;
+        printf("[S%u] Corda lotada.\n", babuinoId);
     }
- 
-    unsigned int babuinoId = 0 + rand() % (( 100 + 1 ) - 0);
-
-    //LOCK
-    if (corda->direcaoAtual == NORTE_SUL)
-        if (corda->livre)
+    else
+    {
+        corda->numBabuinosAtravessando++;
+         
+        
+        for (int i = 1; i <= 5; i++)
         {
-            corda->direcaoAtual = !corda->direcaoAtual;
-            corda->livre = !corda->livre;
-        }
-    //UNLOCK
+            printf("[S%u] Percorreu: %u%%\n", babuinoId, i*20);
+            delay_seconds(1);
+        } 
 
-    // while corda->babuinosAtravessando >= *(corda->capacidade)
-    // ESPERAR CAPACIDADE BAIXAR. Aqui, usar-se-á uma variável de condição.
-
-    /* Travessia do babuino */
-
-    corda->numBabuinosSul--;
-    corda->numBabuinosAtravessando++;
-
-    for (int i = 1; i <= 5; i++)
-    {
-        printf("Babuino [S%u] atravessou %u%% da corda\n", 
-                babuinoId,
-                i*20);
-        delay_seconds(1);
+        
         //printaCorda(corda);
-    }
-    corda->numBabuinosAtravessando--;
-    corda->numBabuinosNorte++;
-    return NULL;
-}
+        
+        corda->numBabuinosAtravessando--;
+        corda->numBabuinosSul--;
 
-//--------------------------------------------------------------------------
-// Função principal
+        if (corda->numBabuinosAtravessando == 0)
+        {
+            corda->direcaoAtual = NORTE_SUL;
+            pthread_cond_signal(&cond);
+        }
+
+        pthread_mutex_unlock(&lock);
+    }
+
+    pthread_exit(NULL);
+}
 
 int main()
 {
-
     pthread_t ns;
     pthread_t sn;
 
@@ -166,16 +118,22 @@ int main()
              .capacidade = &capacidade,
              .livre = true,
              .direcaoAtual = NORTE_SUL};
-
+  
     srand(time(NULL));
 
-    pthread_create(&ns, NULL, travessiaNorteSul, &corda);
-    pthread_create(&sn, NULL, travessiaSulNorte, &corda);
+    while(corda.numBabuinosNorte != 0 && corda.numBabuinosSul != 0)
+    { 
+        pthread_create(&ns, NULL, travessiaNorteSul, &corda);
+        pthread_create(&sn, NULL, travessiaSulNorte, &corda);
 
-    printaCorda(&corda);
-    pthread_join(sn, NULL);
-    pthread_join(ns, NULL);
-    printaCorda(&corda);
+        // OBS: O pthread join faz a thread executar ininterruptamente até
+        // o final, que não é o que eu quero. Porém, seu uso faz com que os
+        // babuinos não emperrem na segunda aquisição do lock. Investigar melhor
+        // isso.
+        //
+        //pthread_join(ns, NULL);
+        //pthread_join(sn, NULL); 
+    }
 
     return 0;
 }
