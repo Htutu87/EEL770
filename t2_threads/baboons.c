@@ -44,7 +44,6 @@ void EndNorth(rope_t * rope)
     //printf("---\n[LOCKED]\n");
     //printf("End north.\n");
 
-
     rope->baboons_going_south--;
     //printf("[UNLOCKED]\n---\n");
     rope->north_remaining_baboons--;
@@ -65,9 +64,11 @@ void *NorthSouthCrossing(void *arg)
     unsigned int baboonId = 0 + rand() % ( (100 + 1) - 0);
 
     GoNorth(rope);
-    for (int i = 0; i < 3; i++)
+    for (int i = 1; i <= 5; i++)
     {
-        printf("Babuino #%u atravessando.\n", baboonId);
+        printf("Babuino #%u atravessou %u%% [", baboonId, 20*i);
+        for (int j = 0; j < i; j++) printf("X");
+        printf("]\n");
         delay_seconds(1);
     }
     EndNorth(rope);
