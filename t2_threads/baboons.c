@@ -11,11 +11,19 @@ pthread_cond_t waitSouth = PTHREAD_COND_INITIALIZER;
 void GoNorth(rope_t * rope)
 { 
     pthread_mutex_lock(&lock);
+   
+    while(rope->baboons_going_north > 0 ||
+            rope->baboons_going_north >= *rope->capacity)
+        pthread_cond_wait(&waitNorth, &lock);
+
     printf("---\n[LOCKED]\n");
-    rope->baboons_going_north++;
     printf("Go north.\n");
+    
+    rope->baboons_going_south++;
     printRopeAttr(rope);
+    
     printf("[UNLOCKED]\n---\n");
+    
     pthread_mutex_unlock(&lock);
 
 }
@@ -23,12 +31,21 @@ void GoNorth(rope_t * rope)
 void EndNorth(rope_t * rope)
 {
     pthread_mutex_lock(&lock);
+
     printf("---\n[LOCKED]\n");
-    rope->baboons_going_north--;
     printf("End north.\n");
-    printRopeAttr(rope);
+
+    rope->baboons_going_south--;
+
     printf("[UNLOCKED]\n---\n");
     rope->north_remaining_baboons--;
+    
+    if (rope->baboons_going_south < *rope->capacity)
+        pthread_cond_signal(&waitNorth);
+
+    if (rope->baboons_going_north == 0)
+        pthread_cond_signal(&waitSouth);
+        
     pthread_mutex_unlock(&lock);
 }
 
@@ -43,11 +60,12 @@ void *NorthSouthCrossing(void *arg)
 }
 
 
+// TO-DO
+// MAIS MACACOS QUE A CAPACIDADE TÃO ATRAVESSANDOA  ACORDA.
+
 int main()
 {
     const unsigned int capacity = 5;
-    // FALTA UMA VARIÁVEL QUE INDICA A QUANTIDADE DE BABUINOS QUE SOBRARAM EM
-    // CADA LADO.
 
     rope_t rope = {
         .baboons_going_south = 0,
