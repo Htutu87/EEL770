@@ -9,8 +9,8 @@
 
 #define NORTE_SUL 0
 #define SUL_NORTE 1
-#define NUM_INICIAL_NORTE 3
-#define NUM_INICIAL_SUL 3
+#define NUM_INICIAL_NORTE 1
+#define NUM_INICIAL_SUL 1
 
 typedef struct
 {

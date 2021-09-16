@@ -26,5 +26,11 @@ variável de condição será checada mais uma vez, na thread que foi acordada, 
 teste do while, para garantir que o estado do programa é o realmente desejado.
 Se, por algum motivo, não for, a o wait() será chamado novamente.
 
+---
+Da documentação:
 
-
+" If the mutex type is PTHREAD_MUTEX_NORMAL, deadlock detection is not provided;
+Attempting to relock the mutex causes deadlock. If a thread attempts to unlock
+a mutex that it has not locked or a mutex which is unlocked, undefined behaviour
+results.  "
+---

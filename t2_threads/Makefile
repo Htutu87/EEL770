@@ -7,7 +7,7 @@
 
 CC = gcc
 CFLAGS = -Wall -std=c11 -pthread
-TARGET = babuinos
+TARGET = baboons
 
 all: $(TARGET)
 

@@ -15,10 +15,18 @@
 // Talvez eu tenha que criar duas filas de espera, uma para o norte, outra para
 // o sul, pois o signal pode acabar acordando um thread do mesmo lado. Talvez não.
 
+// Uma lock só pode ser adquirido e readquirido uma única vez dentro da thread.
+// Para quebrar essa condição, deve-se utiliza um mutex_recursivo.
+
+
 #include "babuinos.h"
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t lockNorte = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t lockSul = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_cond_t filaSul = PTHREAD_COND_INITIALIZER;
+pthread_cond_t filaNorte = PTHREAD_COND_INITIALIZER;
 
 void *travessiaNorteSul(void *arg)
 {
@@ -26,27 +34,31 @@ void *travessiaNorteSul(void *arg)
     unsigned short babuinoId = 0 + rand() % ( (100 + 1) - 0);
 
     pthread_mutex_lock(&lock);
+
     while(corda->direcaoAtual == SUL_NORTE) 
-        pthread_cond_wait(&cond, &lock);
+        pthread_cond_wait(&filaNorte, &lock);
     
-    if (corda->numBabuinosAtravessando >= *corda->capacidade)
-        printf("[N%u] Corda lotada.\n", babuinoId);
+    if (corda->numBabuinosAtravessando > *corda->capacidade)
+    {
+        printf("[N%u] Corda lotada. Babuino tentara novamente mais tarde.\n",
+                babuinoId);
+        pthread_mutex_unlock(&lockNorte);
+    }
     else
     {
         corda->numBabuinosAtravessando++;
-         
+        
+        pthread_cond_signal(&filaNorte);
+        
         for (int i = 1; i <= 5 ; i++)
         {
             printf("[N%u] Percorreu: %u%%\n", babuinoId, i*20);
+            //for (int j = 1; j <= i; j++) printf("X");
+            //printf("]\n");
             delay_seconds(1);
         } 
-        
-        
 
-        // Quando a travessia é completada, o programa contabiliza que um babuino
-        // saiu do norte e foi pro sul.
-    
-        //printaCorda(corda);
+        pthread_mutex_lock(&lock);
 
         corda->numBabuinosAtravessando--;
         corda->numBabuinosNorte--; 
@@ -54,7 +66,7 @@ void *travessiaNorteSul(void *arg)
         if (corda->numBabuinosAtravessando == 0)
         {
             corda->direcaoAtual = SUL_NORTE;
-            pthread_cond_signal(&cond);
+            pthread_cond_signal(&filaSul);
         }
 
         pthread_mutex_unlock(&lock);
@@ -69,34 +81,38 @@ void *travessiaSulNorte(void *arg)
     unsigned short babuinoId = 0 + rand() % ( (100 + 1) - 0);
 
     pthread_mutex_lock(&lock);
+
     while(corda->direcaoAtual == NORTE_SUL) 
-        pthread_cond_wait(&cond, &lock);
+        pthread_cond_wait(&filaSul, &lock);
     
-    if (corda->numBabuinosAtravessando >= *corda->capacidade)
+    if (corda->numBabuinosAtravessando > *corda->capacidade)
     {
         printf("[S%u] Corda lotada.\n", babuinoId);
+        pthread_mutex_unlock(&lock);
     }
     else
     {
         corda->numBabuinosAtravessando++;
-         
         
+        pthread_cond_signal(&filaSul);
+         
         for (int i = 1; i <= 5; i++)
         {
             printf("[S%u] Percorreu: %u%%\n", babuinoId, i*20);
+            //for (int j = 1; j <= i; j++) printf("X");
+            //printf("]\n");
             delay_seconds(1);
         } 
 
-        
-        //printaCorda(corda);
-        
+        pthread_mutex_lock(&lock);
+
         corda->numBabuinosAtravessando--;
         corda->numBabuinosSul--;
 
         if (corda->numBabuinosAtravessando == 0)
         {
             corda->direcaoAtual = NORTE_SUL;
-            pthread_cond_signal(&cond);
+            pthread_cond_signal(&filaNorte);
         }
 
         pthread_mutex_unlock(&lock);
