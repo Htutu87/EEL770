@@ -19,8 +19,12 @@ typedef struct
 
 void printRopeAttr(rope_t *rope)
 {
+    printf("--\n");
     printf("Baboons going south: %u\n", rope->baboons_going_south);
     printf("Baboons going north: %u\n", rope->baboons_going_north);
+    printf("North remaining baboons: %u\n", rope->north_remaining_baboons);
+    printf("South remaining baboons: %u\n", rope->south_remaining_baboons);
+    printf("--\n");
 }
 
 void delay_seconds(double seconds)
