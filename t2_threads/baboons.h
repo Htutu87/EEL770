@@ -7,6 +7,9 @@
 #include <stdbool.h>
 #include <pthread.h>
 
+// Definição do tipo corda. Esta será a estrutura de dados compartilhada entre
+// as threads.
+//
 typedef struct
 {
     unsigned int baboons_going_north,
@@ -17,6 +20,8 @@ typedef struct
 } rope_t;
 
 
+// Função auxiliar para printar os atributos da corda, ajudando na depuração.
+//
 void printRopeAttr(rope_t *rope)
 {
     printf("--\n");
@@ -27,6 +32,8 @@ void printRopeAttr(rope_t *rope)
     printf("--\n");
 }
 
+// Função auxiliar de temporização.
+//
 void delay_seconds(double seconds)
 { 
     clock_t start_time;

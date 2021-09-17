@@ -1,0 +1,40 @@
+
+EEL770 - Sistemas Operacionais
+UFRJ | 2021.1 | Prof.: Rodrigo Couto
+Autor: Artur Amaral | DRE: 119057968
+Descrição: Arquivo Read me.
+
+--------------------------------
+* Descrição e uso do programa
+--------------------------------
+
+O programa apresenta uma solução para o problema da travessia dos babuínos,
+descrito no livro apresentado no roteiro do trabalho.
+
+Na minha solução, nomeei as duas regiões em que existem babuínos de Norte e Sul.
+Por consequência, a tarefa que os babuínos do norte executam é a travessia norte
+->sul e vice-versa.
+
+Para implementar a concorrência no programa, cada babuíno é representado por uma
+thread, de forma que a função que ela executa é a travessia do respectivo babuíno,
+do início ao fim. Quando o babuíno chega ao seu destino, ele contabiliza em uma
+variável compartilhada por todos os macacos e encerra sua execução.
+
+Mais detalhes sobre implementação, recorrer aos comentários escritos no código-
+-fonte
+
+--------------------------------
+* Compilação
+--------------------------------
+
+No diretório do arquivo há um makefile para a compilação do programa (comando:
+'make baboons') e remoção dos arquivos executáveis (comando: 'make clean').
+Par executar, digite './baboons'.
+
+--------------------------------
+* Sistema utilizado
+--------------------------------
+
+Distribuição/versão: Manjaro Linux 21.1.0
+Kernel: 5.10.49-1-MANJARO
+
