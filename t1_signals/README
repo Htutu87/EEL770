@@ -4,9 +4,9 @@ UFRJ | 2021.1 | Prof.: Rodrigo Couto
 Autor: Artur Amaral | DRE: 119057968
 Descrição: Arquivo Read me.
 
---------------------------------
+---------------------------------
 * Descrição e uso do programa
---------------------------------
+---------------------------------
 
 O código fonte disparador.c implementa um programa que espera sinais vindos do
 sistema operacional. O programa responde a três sinais diferentes: SIGUSR1, SIGUSR2

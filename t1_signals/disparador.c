@@ -40,8 +40,7 @@ unsigned short sinalRecebido = 0;
 /*
  * A estrutura da TarefaUm(), no que se refere ao modo de uso das chamadas de
  * sistema e do estabeleciment do pipe, foram fortemente baseadas no que foi
- * ensinado em aula. 
- * 
+ * ensinado em aula.  
  * */
 
 

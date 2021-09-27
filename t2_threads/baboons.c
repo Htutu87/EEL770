@@ -211,33 +211,6 @@ void *SouthNorthCrossing(void *arg)
 }
 
 
-// O QUE FALTA
-// FALAR NO README QUE O PRINT TÁ FEIO, MAS TA FUNCIONANDO
-// FALAR COMO COMPILA
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //---------------------------------------------------------------------------
 // Função principal.
 //
